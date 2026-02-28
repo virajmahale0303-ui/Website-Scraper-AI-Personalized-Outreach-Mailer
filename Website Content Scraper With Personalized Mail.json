@@ -1,0 +1,775 @@
+{
+  "name": "website scraper",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -32
+      ],
+      "id": "9c25a254-44f7-490e-896b-43908cf5d308",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1x0l38ud9KhYGo61iAoFjJb4V7X-JgPB1g-dhWHENnm0",
+          "mode": "list",
+          "cachedResultName": "test spread sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1x0l38ud9KhYGo61iAoFjJb4V7X-JgPB1g-dhWHENnm0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1x0l38ud9KhYGo61iAoFjJb4V7X-JgPB1g-dhWHENnm0/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -256,
+        -32
+      ],
+      "id": "5877ec25-d7b9-44da-94de-b8be4886f3b5",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3DsFKNelOrHqhFyx",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "eb1812ac-45ae-4bf1-bcd5-4c058f6c72f2",
+              "leftValue": "={{ $json.EMAIL }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "c481416b-14e4-4dc2-aab9-693e23ed9570",
+              "leftValue": "={{ $json.website }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -32,
+        -32
+      ],
+      "id": "316f638f-c103-4a4e-882b-51f8ed701aa2",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.website }}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        192,
+        -32
+      ],
+      "id": "9c140424-794f-425a-99c3-5cce7f7130dd",
+      "name": "HTTP Request",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "links",
+              "cssSelector": "a",
+              "returnValue": "attribute",
+              "attribute": "href",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {
+          "trimValues": true
+        }
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        416,
+        -32
+      ],
+      "id": "9a312d71-175b-4265-b5af-aadb3ff8def3",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0537d906-f312-4369-b8be-115fd4dd3438",
+              "name": "NAME",
+              "value": "={{ $('Filter').item.json.NAME }}",
+              "type": "string"
+            },
+            {
+              "id": "0511ec47-9ec9-4b33-99b5-9bfa6fe35a36",
+              "name": "EMAIL",
+              "value": "={{ $('Filter').item.json.EMAIL }}",
+              "type": "string"
+            },
+            {
+              "id": "fb48a9d9-5d2a-4a57-99ae-959dec7d9cea",
+              "name": "website",
+              "value": "={{ $('Filter').item.json.website }}",
+              "type": "string"
+            },
+            {
+              "id": "c8bb4974-961a-4dce-99c5-60e46080608e",
+              "name": "links",
+              "value": "={{ $json.links }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        -32
+      ],
+      "id": "51b81397-da34-468f-9ebf-bb7c3a92459d",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        864,
+        -32
+      ],
+      "id": "b26a3aeb-fed0-4cff-9b27-93ec4a72ea52",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "links",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        -192
+      ],
+      "id": "1b261ca8-0469-417e-81c2-6b0ae27f1132",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "87634e06-345f-46f8-8f2a-4fb846c50041",
+              "leftValue": "={{ $json.links }}",
+              "rightValue": "/",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        1216,
+        -304
+      ],
+      "id": "81b5be23-bb0c-4351-ac09-b9f3062e0e57",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        1424,
+        -304
+      ],
+      "id": "2a8ea641-0b33-4294-b7bf-b2d082944027",
+      "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Loop Over Items').item.json.website.trim()+$json.links.trim() }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1568,
+        -192
+      ],
+      "id": "598d3d77-664c-44dd-aafb-7c2dea2bd431",
+      "name": "HTTP Request1",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "html": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        1744,
+        -192
+      ],
+      "id": "9696b9c8-5311-4648-be41-83309f666a23",
+      "name": "Markdown"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-pro-latest",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-pro-latest"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "you are a helpful, intelligent website scraping assistant ",
+              "role": "model"
+            },
+            {
+              "content": "=\nYou're provided a Markdown scrape of a website page.  \nYour task: provide a two-paragraph of what this page is about.  \n\nRules:  \n- Your extract should be comprehensive—similar level of detail as a published paper.  \n- Use a straightforward, spartan tone of voice.  \n- If it's empty, just say. \n",
+              "role": "model"
+            },
+            {
+              "content": "={{ $json.data.length > 5000 ? $json.data.slice(0,5000) : $json.data }}\n"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1904,
+        -192
+      ],
+      "id": "3e323f06-7a0c-430c-a1ff-df044f430d94",
+      "name": "summarize page",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Y4CYKTfyQ8Pbe7S7",
+          "name": "test 1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "={{ $json.content.parts[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2208,
+        -192
+      ],
+      "id": "482684fa-f930-42e7-8403-1c26b0a0dadb",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-pro-latest",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-pro-latest"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "you are a helpful,intellegent sales assistant",
+              "role": "model"
+            },
+            {
+              "content": "=We just scraped a series of web pages for a business. Your \ntask is to take their summaries and turn them into catchy, \npersonalized openers for a cold email campaign to imply \nthat the rest of the campaign is personalized. \n\nYou'll return your icebreakers in the following JSON format: \n\n{\"icebreaker\":\"Hey {name}. Love {thing}—also doing/like/a \nfan of {otherThing}. Wanted to run something by you.\\n\\nI \nhope you’ll forgive me, but I creeped you/your site quite a \nbit, and know that {anotherThing} is important to you guys \n(or at least I’m assuming this given the focus on \n{fourthThing}). I put something together a few months ago \nthat I think could help. To make a long story short, it’s \nan outreach system that uses AI to find people hiring \nwebsite devs. Then pitches them with templates (actually \nmakes them a demo website). Costs just a few cents to run, \nvery high converting, and I think it’s in line with \n{someImpliedBeliefTheyHave}\"}\n\nRules:  \n- Write in a spartan/laconic tone of voice.  \n- Make sure to use the above format when constructing your icebreakers. We wrote it this way on purpose.  \n- Shorten the company name wherever possible (say, \"XYZ\" instead of \"XYZ Agency\"). More examples: \"Love AMS\" instead of \"Love AMS Professional Services\", \"Love Mayo\" instead of \"Love Mayo Inc.\", etc.  \n- Do the same with locations. \"San Fran\" instead of \"San Francisco\", \"BC\" instead of \"British Columbia\", etc.  \n- For your variables, focus on small, non-obvious things to paraphrase. The idea is to make people think we *really* dove deep into their website, so don’t use something obvious. Do not say cookie–cutter stuff like \"Love your website!\" or \"Love your take on marketing!\".  \n"
+            },
+            {
+              "content": "Profile: Aina Rakotoarinaly, CEO founder – Maki Agency / Ti’bo uffe, Maki agency, outsourcing/ offshoring, Antananarivo, Madagascar\n\nwebsite:\nThis webpage presents Maki Agency, a professional digital outsourcing company based in Madagascar that specializes in tailored web development, integration, design, SEO, content creation, community management, and more. The agency offers a range of white-label and dedicated resource solutions, targeting businesses that wish to outsource various digital projects.\n\n"
+            },
+            {
+              "content": "example:\n{\"icebreaker\":\"Hey Aina,\\n\\nLove what you're doing at Maki. Also doing some outsourcing right now, wanted to run something by you.\\n\\nSo I hope you'll forgive me, but I creeped you/Maki quite a bit. I know that discretion is important to you guys (or at least I'm assuming this given the part on your website about white-labelling your services) and I put something together a few months ago that I think could help. To make a long story short, it's an outreach system that uses AI to find people hiring website devs. Then pitches them with templates (actually makes them a white-labelled demo website). Costs just a few cents to run, very high converting, and I think it's in line with Maki's emphasis on scalability.\"}\n",
+              "role": "model"
+            },
+            {
+              "content": "=Profile: {{ $('Loop Over Items').item.json.NAME }}{{ $('Get row(s) in sheet').item.json.website }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        2352,
+        -48
+      ],
+      "id": "6b5a45e3-67a5-4db4-9a63-69eae78befea",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Y4CYKTfyQ8Pbe7S7",
+          "name": "test 1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1x0l38ud9KhYGo61iAoFjJb4V7X-JgPB1g-dhWHENnm0",
+          "mode": "list",
+          "cachedResultName": "test spread sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1x0l38ud9KhYGo61iAoFjJb4V7X-JgPB1g-dhWHENnm0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1378333839,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1x0l38ud9KhYGo61iAoFjJb4V7X-JgPB1g-dhWHENnm0/edit#gid=1378333839"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "icebreaker": "={{ $json.content.parts[0].text }}",
+            "email": "={{ $('Filter').item.json.EMAIL }}",
+            "website url": "={{ $('Filter').item.json.website }}",
+            "Name": "={{ $('Filter').item.json.NAME }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "website url",
+              "displayName": "website url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "icebreaker",
+              "displayName": "icebreaker",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2464,
+        128
+      ],
+      "id": "4a862782-ff5d-424f-9f97-806ca0ace2c4",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3DsFKNelOrHqhFyx",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.icebreaker }}",
+        "options": {
+          "systemMessage": "=You are an AI cold email assistant.  \nYour job is to:  \n1. Take the given input text (usually under a field like \"icebreaker\").  \n2. Rewrite it into a professional, ready-to-send cold email.  \n   - Always include a clear subject line.  \n   - Keep the tone polite, concise, and persuasive.  \n   - Format with greeting, body, and closing.  \n3. Output only in the following JSON format:\n\n{\n  \"subject\": \"Your subject line here\",\n  \"body\": \"Your email body here\"\n}\n\n4. Once the email is generated, automatically send it using the Gmail tool.  \n   - Use the field \"to\" for recipient email.  \n   - Use \"subject\" for the subject line.  \n   - Use \"body\" for the email text.  \nExample:\nInput:\n\n{\"icebreaker\": \"Hey Viraj, Love the minimalist design...\"}\n\n\nOutput (Agent):\n\n{\n  \"subject\": \"AI Outreach System for Data-Driven Retail Growth\",\n  \"body\": \"Hi Viraj,\\n\\nI came across Graff and really liked the minimalist design...\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        2400,
+        256
+      ],
+      "id": "919744f0-5db3-4048-b453-f69bc125bba9",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1840,
+        240
+      ],
+      "id": "eef5b6b5-021e-417c-a337-8b41eb1dfc96",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Y4CYKTfyQ8Pbe7S7",
+          "name": "test 1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        1968,
+        240
+      ],
+      "id": "2cb14828-5234-4b5e-8842-1a2edff4a23a",
+      "name": "Send a message in Gmail",
+      "webhookId": "c739bd31-1de1-4329-a4bc-eb97bef1805e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "u8PwPz1F6EJoDS1a",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        2080,
+        240
+      ],
+      "id": "52f3551b-c8f6-4633-b1f5-7a73e6ab8be0",
+      "name": "Think"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "summarize page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "summarize page": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "da4f9ab6-39f0-4f31-80f5-ccd4577972cf",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0f80a6028b8fb08b99608634e3b636bb0d81075728466e32fb31750330e11248"
+  },
+  "id": "xd9rp8itOwbVW5bT",
+  "tags": []
+}
